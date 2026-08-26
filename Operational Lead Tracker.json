@@ -1,0 +1,468 @@
+{
+  "name": "Operational Lead Tracker",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "8018e822-1545-4839-b1fb-7f0655c62c9c",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Ce1BNjm8ZA8B0JUy8CvCNWXuy6nhOUIhUtp0VuQYddw",
+          "mode": "list",
+          "cachedResultName": "Operational Lead Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ce1BNjm8ZA8B0JUy8CvCNWXuy6nhOUIhUtp0VuQYddw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ce1BNjm8ZA8B0JUy8CvCNWXuy6nhOUIhUtp0VuQYddw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "cb49f3e6-ecc2-4484-9b17-56bdceacfb0a",
+      "name": "READ_GetSpreadsheetRows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        96
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "R0IMONpHVpSH0xue",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "78f654cb-8edd-4883-ada7-2c4c35cbf493",
+              "leftValue": "={{ $json.lead_status }}",
+              "rightValue": "Pending",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fd176556-806e-48ed-b7e0-c486d078b1f0",
+      "name": "FILTER_PendingStatus",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ce1BNjm8ZA8B0JUy8CvCNWXuy6nhOUIhUtp0VuQYddw",
+          "mode": "list",
+          "cachedResultName": "Operational Lead Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ce1BNjm8ZA8B0JUy8CvCNWXuy6nhOUIhUtp0VuQYddw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ce1BNjm8ZA8B0JUy8CvCNWXuy6nhOUIhUtp0VuQYddw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "lead_id"
+          ],
+          "value": {
+            "lead_id": "={{ $json.lead_id }}",
+            "lead_status": "Processing",
+            "execution_id": "={{ $execution.id }}",
+            "updated_at": "={{ $now.toISO() }}"
+          },
+          "schema": [
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_status",
+              "displayName": "lead_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "execution_id",
+              "displayName": "execution_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8f6e0f6a-323e-4c6a-a4cc-9286ddbf05fc",
+      "name": "LOCK_UpdateStatusProcessing",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        96
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "bMMQFM65aDau8kyC",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://httpbin.org/post",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lead_id: $json.lead_id, email: $json.email, execution_id: $json.execution_id }) }}",
+        "options": {}
+      },
+      "id": "dee5aaae-b1ea-4063-b9c0-0bfd625a8824",
+      "name": "ACTION_ProcessInvoice",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        96
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "no-error",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1a064b7d-cc34-4a5a-b6e6-2cb34ff6299e",
+      "name": "IF_ProcessSuccess",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1120,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ce1BNjm8ZA8B0JUy8CvCNWXuy6nhOUIhUtp0VuQYddw",
+          "mode": "list",
+          "cachedResultName": "Operational Lead Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ce1BNjm8ZA8B0JUy8CvCNWXuy6nhOUIhUtp0VuQYddw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ce1BNjm8ZA8B0JUy8CvCNWXuy6nhOUIhUtp0VuQYddw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "lead_id"
+          ],
+          "value": {
+            "lead_id": "={{ $('LOCK_UpdateStatusProcessing').item.json.lead_id }}",
+            "lead_status": "Completed",
+            "updated_at": "={{ $now.toISO() }}"
+          },
+          "schema": [
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_status",
+              "displayName": "lead_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "296fab8c-26a2-46b6-a0a5-9d772b6714d1",
+      "name": "UPDATE_StatusCompleted",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1344,
+        0
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "bMMQFM65aDau8kyC",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ce1BNjm8ZA8B0JUy8CvCNWXuy6nhOUIhUtp0VuQYddw",
+          "mode": "list",
+          "cachedResultName": "Operational Lead Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ce1BNjm8ZA8B0JUy8CvCNWXuy6nhOUIhUtp0VuQYddw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ce1BNjm8ZA8B0JUy8CvCNWXuy6nhOUIhUtp0VuQYddw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "lead_id"
+          ],
+          "value": {
+            "lead_id": "={{ $('LOCK_UpdateStatusProcessing').item.json.lead_id }}",
+            "lead_status": "Failed",
+            "error_details": "={{ $json.error || \"Downstream business action failed\" }}",
+            "updated_at": "={{ $now.toISO() }}"
+          },
+          "schema": [
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_status",
+              "displayName": "lead_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "error_details",
+              "displayName": "error_details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1d1e39f8-73fc-4502-a3dc-f1e752c31c8b",
+      "name": "UPDATE_StatusFailed",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1344,
+        192
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "bMMQFM65aDau8kyC",
+          "name": "Google Service Account account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "READ_GetSpreadsheetRows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "READ_GetSpreadsheetRows": {
+      "main": [
+        [
+          {
+            "node": "FILTER_PendingStatus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER_PendingStatus": {
+      "main": [
+        [
+          {
+            "node": "LOCK_UpdateStatusProcessing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOCK_UpdateStatusProcessing": {
+      "main": [
+        [
+          {
+            "node": "ACTION_ProcessInvoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ACTION_ProcessInvoice": {
+      "main": [
+        [
+          {
+            "node": "IF_ProcessSuccess",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF_ProcessSuccess": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_StatusCompleted",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "UPDATE_StatusFailed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6f6f5ee0-3c6d-474e-872c-e76975fdac09",
+  "meta": {
+    "instanceId": "201381d913fa9e78389f7093cb99cedc70c766251a500f897db19feccfda3bd0"
+  },
+  "nodeGroups": [],
+  "id": "p2jtd8P16qSVDdbe",
+  "tags": []
+}
